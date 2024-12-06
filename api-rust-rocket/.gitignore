@@ -1,0 +1,17 @@
+# Rust build artifacts
+/target/
+*.rs.bk
+
+# Dependency files
+Cargo.lock
+
+# Logs
+*.log
+
+# IDEs and editors
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
