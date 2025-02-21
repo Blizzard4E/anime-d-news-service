@@ -5,8 +5,8 @@ from tinymce.models import HTMLField
 # Create your models here.
 class News(models.Model):
     title = models.CharField(max_length=200)
-    content = HTMLField()   # Rich text editor for formatted content
-    cover_url = models.URLField(max_length=500)  # For image thumbnail
+    content = HTMLField()
+    cover_image = models.ImageField(upload_to='news_covers/', null=True, blank=True)
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -17,7 +17,7 @@ class News(models.Model):
 
     class Meta:
         verbose_name_plural = "News"
-        ordering = ['-created_at']  # Newest first
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.title

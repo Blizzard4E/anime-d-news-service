@@ -16,16 +16,30 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
 class NewsSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
+    cover_image = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
-    comments = CommentSerializer(many=True, read_only=True)
     is_liked = serializers.SerializerMethodField()
-
+    comments = CommentSerializer(many=True, read_only=True)
+    author = UserSerializer(read_only=True)
     class Meta:
         model = News
-        fields = ('id', 'title', 'content', 'cover_url', 'author', 
-                 'created_at', 'updated_at', 'likes_count', 'comments', 'is_liked')
-        read_only_fields = ('author',)
+        fields = [
+            'id', 'title', 'content', 'cover_image', 
+            'author', 'created_at', 'updated_at',
+            'likes_count', 'is_liked', 'comments'
+        ]
+        read_only_fields = ['author', 'created_at', 'updated_at']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.cover_image:
+            representation['cover_image'] = instance.cover_image.url
+        return representation
+
+    def get_cover_image(self, obj):
+        if obj.cover_image:
+            return obj.cover_image.url  # This returns the relative path like '/media/news_covers/poster.png'
+        return None
 
     def get_likes_count(self, obj):
         return obj.likes.count()

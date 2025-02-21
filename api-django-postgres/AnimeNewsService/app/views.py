@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.models import User
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 @api_view(['POST'])
 def register(request):
@@ -25,13 +26,41 @@ def register(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+from rest_framework.parsers import MultiPartParser, FormParser
+
 class NewsViewSet(viewsets.ModelViewSet):
     queryset = News.objects.all()
     serializer_class = NewsSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    parser_classes = (MultiPartParser, FormParser,JSONParser)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        print("Data received:", self.request.data)
+        print("Files received:", self.request.FILES)
+        
+        cover_image = self.request.FILES.get('cover_image')
+        if cover_image:
+            serializer.save(author=self.request.user, cover_image=cover_image)
+        else:
+            serializer.save(author=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        news = self.get_object()
+        # Add permission check
+        if news.author != request.user:
+            return Response({"detail": "You do not have permission to delete this news."}, 
+                          status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
     @action(detail=True, methods=['POST'])
     def like(self, request, pk=None):
@@ -48,12 +77,16 @@ class NewsViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['POST'])
     def comment(self, request, pk=None):
         news = self.get_object()
-        serializer = CommentSerializer(data={
-            'news': news.id,  # Add the news ID
+        # Include the news ID in the data
+        data = {
+            'news': news.id,  # Add the news ID here
             'content': request.data.get('content')
-        })
+        }
+        
+        serializer = CommentSerializer(data=data)
         
         if serializer.is_valid():
             serializer.save(news=news, author=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
