@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-3m47_*fxy3o^a62!wv1z+pu8(zev0@@41_iu$rx5*7=pv&#)*k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -96,7 +96,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'anime_news_service', 
         'USER': 'postgres',
-        'PASSWORD': 'admin',  
+        'PASSWORD': 'postgres',  
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -139,10 +139,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Add CORS configuration if needed
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  
-]
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True  # Allows all origins
+CORS_ALLOW_CREDENTIALS = True  # Allows cookies and authentication headers
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
